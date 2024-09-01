@@ -181,7 +181,7 @@ console.log(orderItems);
                       <figure>
                         <img
                           className="h-[140px] w-[130px]"
-                          src={product.images[0]}
+                          src={`${baseUrl}/${product.images[0]}`}
                           alt={product.productName}
                         />
                       </figure>

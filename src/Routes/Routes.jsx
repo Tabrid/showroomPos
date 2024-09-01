@@ -2,6 +2,8 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 import PosOrders from "../Pages/POS/PosOrders";
+import Login from "../Pages/Login/Login";
+import AdminProtected from "./AdminProtected";
 
 
 
@@ -9,6 +11,10 @@ import PosOrders from "../Pages/POS/PosOrders";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <PosOrders />,
+    element: <AdminProtected><PosOrders /></AdminProtected>,
   },
+  {
+    path:'/login',
+    element:<Login/>
+  }
 ]);
