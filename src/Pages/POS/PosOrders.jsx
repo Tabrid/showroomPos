@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SizeModal from "./SizeModal";
 import { IoPlayBackCircleSharp } from "react-icons/io5";
 import { Link } from "react-router-dom";
@@ -9,6 +9,7 @@ import FullScreenButton from "../../Components/FullScreenButton";
 import FilterDropdown from '../../Components/productFilter'
 import HoldList from "./HoldList";
 import HoldSaleModal from "../../Components/HoldSaleModal";
+import { CiBarcode } from "react-icons/ci";
 const PosOrders = () => {
   document.title = "Estarch | Pos Orders";
   const [products, setProducts] = useState([]);
@@ -30,7 +31,7 @@ const PosOrders = () => {
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
@@ -42,7 +43,7 @@ const PosOrders = () => {
     setIsModalOpenList(false);
   };
 
-console.log(orderItems);
+  console.log(orderItems);
 
   const fetchUserData = async (phone) => {
     try {
@@ -161,6 +162,34 @@ console.log(orderItems);
     setTotalTK(calculateTotalAmount() - totalDiscount)
   }, [calculateTotalAmount(), totalDiscount, discount])
 
+  const inputRef = useRef(null);
+  const [isBarcodeScanning, setIsBarcodeScanning] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Assuming a barcode scanner types very quickly (interval between keypresses is short)
+      if (e.key === "Enter" && isBarcodeScanning) {
+        // When the Enter key is pressed during barcode scanning, focus on the invoice input
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+        setIsBarcodeScanning(false); // Reset scanning state after handling
+      }
+    };
+
+    const handleKeyPress = () => {
+      // Start barcode scanning mode (this could be more sophisticated)
+      setIsBarcodeScanning(true);
+    };
+
+    window.addEventListener("keypress", handleKeyPress);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keypress", handleKeyPress);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isBarcodeScanning]);
   return (
     <React.Fragment>
       <div className="mt-2">
@@ -234,6 +263,16 @@ console.log(orderItems);
                     </span>
                   }
                 </p>
+                <label className="input  rounded-sm input-bordered flex items-center gap-2 my-1 h-10">
+                  <CiBarcode />
+                  <input
+                    type="text"
+                    className="grow"
+                    placeholder="barcode"
+                    ref={inputRef}
+                    onBlur={() => inputRef.current.focus()}
+                  />
+                </label>
                 <div className="min-w-full bg-white px-4">
                   {/* Header */}
                   <div className="bg-green-500 text-white flex">
@@ -382,8 +421,8 @@ console.log(orderItems);
                   :::
                 </p>
               </div>
-              <HoldList setUserInfo={setUserInfo} setOrderItems={setOrderItems} isOpen={isModalOpenList} onClose={handleCloseModalList}/>
-              <div className="bg-[#ff890f] w-1/12 cursor-pointer"  onClick={handleOpenModal}>
+              <HoldList setUserInfo={setUserInfo} setOrderItems={setOrderItems} isOpen={isModalOpenList} onClose={handleCloseModalList} />
+              <div className="bg-[#ff890f] w-1/12 cursor-pointer" onClick={handleOpenModal}>
                 <p className="text-4xl font-bold py-4 text-white">
                   Hold
                 </p>

@@ -1,7 +1,6 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect} from 'react';
 import axios from 'axios';
 import baseUrl from '../../Components/services/baseUrl';
-
 export default function Modal() {
   const [invoiceNo, setInvoiceNo] = useState('');
   const [exchangeDetails, setExchangeDetails] = useState({
@@ -27,7 +26,7 @@ export default function Modal() {
       const response = await axios.get(`${baseUrl}/api/orders/order/invoice/${invoiceNo}`);
       const order = response.data;
       console.log(order);
-      
+
       setProducts(order.cartItems);
       calculateExchangeDetails(order.cartItems, order.totalAmount);
     } catch (error) {
@@ -120,6 +119,7 @@ export default function Modal() {
                 className="w-[600px] p-2 border border-gray-300 rounded"
               />
             </div>
+            
             <div className="overflow-x-auto mt-10">
               <table className="min-w-full bg-white border">
                 <thead>
