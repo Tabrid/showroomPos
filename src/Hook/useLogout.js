@@ -1,13 +1,12 @@
-import { useRouter } from 'next/navigation';
 import axios from "axios";
 import { useContext, useState } from 'react';
 import { AuthContext } from '../Components/context/AuthProvider';
 import baseUrl from '../Components/services/baseUrl';
-
+import { useNavigate } from "react-router-dom";
 const useLogout = () => {
 	const [loading, setLoading] = useState(false);
 	const { setAuthUser } = useContext(AuthContext);
-	const router = useRouter();
+	const router = useNavigate();
 
 	const logout = async () => {
 		setLoading(true);
@@ -17,15 +16,11 @@ const useLogout = () => {
 			if (response.data.error) {
 				throw new Error(response.data.error);
 			}
-
-			// Clear local storage and reset auth context
 			localStorage.removeItem("userId");
 			setAuthUser(null);
 
 		} catch (error) {
 			console.error("Logout error:", error);
-			// Optionally, handle error with a user-friendly message or toast
-			// toast.error(error.message);
 		} finally {
 			setLoading(false);
 			router.push('/login');

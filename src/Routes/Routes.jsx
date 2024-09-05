@@ -4,6 +4,7 @@ import {
 import PosOrders from "../Pages/POS/PosOrders";
 import Login from "../Pages/Login/Login";
 import AdminProtected from "./AdminProtected";
+import Dashboard from "../Pages/Dashboard/Dashboard";
 
 
 
@@ -11,6 +12,10 @@ import AdminProtected from "./AdminProtected";
 export const router = createBrowserRouter([
   {
     path: "/",
+    element: <AdminProtected><Dashboard/> </AdminProtected>,
+  },
+  {
+    path: "/pos",
     element: <AdminProtected><PosOrders /></AdminProtected>,
   },
   {

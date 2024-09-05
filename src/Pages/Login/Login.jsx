@@ -38,8 +38,8 @@ const Login = () => {
   };
   return (
     <div className="flex flex-col justify-center items-center">
-      <img className='w-[30%] my-4' src={logo} alt="" />
-      <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl">
+      <img className='w-[20%] my-4' src={logo} alt="" />
+      <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl mt-10">
         <form onSubmit={handleSubmit} className="card-body">
           <div className="form-control">
             <label className="label">
@@ -65,9 +65,6 @@ const Login = () => {
               onChange={handleChange}
               required
               className="input input-bordered" />
-            <label className="label">
-              <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
-            </label>
           </div>
           {/* Display error message if there's an error */}
           {error && <div className="text-error">{error}</div>}

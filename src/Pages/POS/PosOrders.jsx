@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SizeModal from "./SizeModal";
 import { IoPlayBackCircleSharp } from "react-icons/io5";
 import { Link } from "react-router-dom";
@@ -18,6 +18,7 @@ const PosOrders = () => {
   const [orderItems, setOrderItems] = useState([]);
   const [discount, setDiscount] = useState({ type: 'percentage', value: 0 });
   const [totalTk, setTotalTK] = useState(0)
+  const [barcode, setBarcode] = useState('');
   const [userInfo, setUserInfo] = useState({
     phone: '',
     name: '',
@@ -161,35 +162,30 @@ const PosOrders = () => {
   useEffect(() => {
     setTotalTK(calculateTotalAmount() - totalDiscount)
   }, [calculateTotalAmount(), totalDiscount, discount])
+  const handleInputChange = (e) => {
+    setBarcode(e.target.value);
+  };
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/products/product/pos/${barcode}`);
 
-  const inputRef = useRef(null);
-  const [isBarcodeScanning, setIsBarcodeScanning] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Assuming a barcode scanner types very quickly (interval between keypresses is short)
-      if (e.key === "Enter" && isBarcodeScanning) {
-        // When the Enter key is pressed during barcode scanning, focus on the invoice input
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-        setIsBarcodeScanning(false); // Reset scanning state after handling
+      if (!response.ok) {
+        throw new Error('Product not found or server error');
       }
-    };
+      const data = await response.json();
+      setOrderItems([
+        ...orderItems,
+       data
+      ]);
+      setBarcode('')
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
+    handleSearch()
+  }, [barcode])
 
-    const handleKeyPress = () => {
-      // Start barcode scanning mode (this could be more sophisticated)
-      setIsBarcodeScanning(true);
-    };
-
-    window.addEventListener("keypress", handleKeyPress);
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keypress", handleKeyPress);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isBarcodeScanning]);
   return (
     <React.Fragment>
       <div className="mt-2">
@@ -269,8 +265,8 @@ const PosOrders = () => {
                     type="text"
                     className="grow"
                     placeholder="barcode"
-                    ref={inputRef}
-                    onBlur={() => inputRef.current.focus()}
+                    value={barcode}
+                    onChange={handleInputChange}
                   />
                 </label>
                 <div className="min-w-full bg-white px-4">
@@ -286,7 +282,7 @@ const PosOrders = () => {
                     <div className="px-4 py-2 flex-1 border-b border-green-500">Action</div>
                   </div>
                   {/* Rows */}
-                  <div className="h-[270px] overflow-y-scroll ">
+                  <div className="h-[200px] overflow-y-scroll ">
                     {orderItems.map((item, index) => (
                       <div key={index} className="flex items-center border-b">
                         <div className="px-4 py-2 flex-grow w-28 text-xs  border-r">{item.productName} ({item.size})<br />Barcode: {item.barcode}</div>

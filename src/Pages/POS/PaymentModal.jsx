@@ -2,26 +2,23 @@ import { useState } from 'react';
 import { PiPlus } from 'react-icons/pi';
 import { TbTrash } from 'react-icons/tb';
 
-const PaymentModal = () => {
-  // State to manage payment rows
+const PaymentModal = ({setPaymentModalVisible}) => {
+
   const [payments, setPayments] = useState([
     { id: 1, type: 'Cash', option: '', amount: '' },
   ]);
   const [receiveCash, setReceiveCash] = useState(0);
   const [remark, setRemark] = useState('');
 
-  // Function to add a new payment row
   const addPaymentRow = () => {
     const newPayment = { id: Date.now(), type: 'Cash', option: '', amount: '' };
     setPayments([...payments, newPayment]);
   };
 
-  // Function to remove a payment row
   const removePaymentRow = (id) => {
     setPayments(payments.filter((payment) => payment.id !== id));
   };
 
-  // Function to handle input changes in payment rows
   const handleInputChange = (id, field, value) => {
     const updatedPayments = payments.map((payment) =>
       payment.id === id ? { ...payment, [field]: value } : payment
@@ -29,13 +26,11 @@ const PaymentModal = () => {
     setPayments(updatedPayments);
   };
 
-  // Calculate total amount
   const totalAmount = payments.reduce(
     (acc, payment) => acc + Number(payment.amount || 0),
     0
   );
 
-  // Calculate change
   const change = receiveCash - totalAmount;
 
   return (
@@ -48,10 +43,6 @@ const PaymentModal = () => {
             <table className="table-auto w-full">
               <tbody>
                 <tr>
-                  <td className="font-medium py-1">Subtotal:</td>
-                  <td className="text-right">{totalAmount}</td>
-                </tr>
-                <tr>
                   <td className="font-medium py-1">Total Amount:</td>
                   <td className="text-right">{totalAmount.toFixed(2)}</td>
                 </tr>
@@ -62,10 +53,6 @@ const PaymentModal = () => {
                 <tr>
                   <td className="font-medium py-1">Total Advance:</td>
                   <td className="text-right">0 TK</td>
-                </tr>
-                <tr>
-                  <td className="font-medium py-1">Sale Date:</td>
-                  <td className="text-right">2024-08-30</td>
                 </tr>
               </tbody>
             </table>
@@ -161,7 +148,7 @@ const PaymentModal = () => {
               />
             </div>
             <div className="flex justify-between items-center mt-6 gap-5">
-              <button className="bg-red-500 text-white px-6 py-2 rounded w-full">
+              <button onClick={()=> setPaymentModalVisible(false)} className="bg-red-500 text-white px-6 py-2 rounded w-full">
                 Cancel [Esc]
               </button>
               <button className="bg-green-500 text-white px-6 py-2 rounded w-full">
