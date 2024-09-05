@@ -5,6 +5,7 @@ import PosOrders from "../Pages/POS/PosOrders";
 import Login from "../Pages/Login/Login";
 import AdminProtected from "./AdminProtected";
 import Dashboard from "../Pages/Dashboard/Dashboard";
+import Invoice from "../Pages/Invoice/Invoice";
 
 
 
@@ -17,6 +18,10 @@ export const router = createBrowserRouter([
   {
     path: "/pos",
     element: <AdminProtected><PosOrders /></AdminProtected>,
+  },
+  {
+    path: "/invoice",
+    element: <AdminProtected><Invoice /></AdminProtected>,
   },
   {
     path:'/login',
