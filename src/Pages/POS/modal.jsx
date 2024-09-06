@@ -1,7 +1,7 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import baseUrl from '../../Components/services/baseUrl';
-export default function Modal() {
+export default function Modal({setUserInfo, setExchangeAmount, setExchangeDetail}) {
   const [invoiceNo, setInvoiceNo] = useState('');
   const [exchangeDetails, setExchangeDetails] = useState({
     exchangeProduct: 0,
@@ -10,6 +10,7 @@ export default function Modal() {
     difference: 0,
   });
   const [products, setProducts] = useState([]);
+  const [data , setData] = useState({})
 
   useEffect(() => {
     if (invoiceNo) {
@@ -25,8 +26,7 @@ export default function Modal() {
     try {
       const response = await axios.get(`${baseUrl}/api/orders/order/invoice/${invoiceNo}`);
       const order = response.data;
-      console.log(order);
-
+      setData(order)
       setProducts(order.cartItems);
       calculateExchangeDetails(order.cartItems, order.totalAmount);
     } catch (error) {
@@ -72,8 +72,17 @@ export default function Modal() {
   };
 
   const continueExchange = () => {
-    console.log('Continuing with exchange');
-    // Add your exchange continuation logic here
+    setUserInfo({
+      phone: data.phone,
+      name: data.name,
+      address: data.address,
+    })
+    setExchangeAmount(exchangeDetails.cartTotal)
+    setExchangeDetail({
+      invoiceNo: data.invoice,
+      items:products
+    })
+    
   };
 
   return (
@@ -94,13 +103,14 @@ export default function Modal() {
                     <td className="border px-4 py-2">{exchangeDetails.exchangeTotal}</td>
                   </tr>
                   <tr>
-                    <td className="border px-4 py-2">Cart Total</td>
-                    <td className="border px-4 py-2">{exchangeDetails.cartTotal}</td>
-                  </tr>
-                  <tr>
                     <td className="border px-4 py-2">Difference</td>
                     <td className="border px-4 py-2">{exchangeDetails.difference}</td>
                   </tr>
+                  <tr>
+                    <td className="border px-4 py-2">Cart Total</td>
+                    <td className="border px-4 py-2">{exchangeDetails.cartTotal}</td>
+                  </tr>
+
                   <tr>
                     <td className="border px-4 py-2">Invoice No</td>
                     <td className="border px-4 py-2">{invoiceNo}</td>
@@ -119,7 +129,7 @@ export default function Modal() {
                 className="w-[600px] p-2 border border-gray-300 rounded"
               />
             </div>
-            
+
             <div className="overflow-x-auto mt-10">
               <table className="min-w-full bg-white border">
                 <thead>
@@ -139,6 +149,7 @@ export default function Modal() {
                         <input
                           type="number"
                           min="1"
+                          max={product.quantity}
                           value={product.quantity}
                           onChange={(e) => handleQuantityChange(index, e.target.value)}
                           className="w-16 p-1 border border-gray-300 rounded"

@@ -24,6 +24,8 @@ const PosOrders = () => {
     name: '',
     address: ''
   });
+  const [exchangeAmount, setExchangeAmount] = useState(0);
+  const [exchangeDetails, setExchangeDetail] = useState(null);
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [orders, setOrders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,8 +162,8 @@ const PosOrders = () => {
   const totalDiscount = discount.type === 'percentage' ? calculateTotalAmount() * discount.value / 100 : discount.value
 
   useEffect(() => {
-    setTotalTK(calculateTotalAmount() - totalDiscount)
-  }, [calculateTotalAmount(), totalDiscount, discount])
+    setTotalTK(calculateTotalAmount() - totalDiscount -exchangeAmount )
+  }, [calculateTotalAmount(), totalDiscount, discount , exchangeAmount])
   const handleInputChange = (e) => {
     setBarcode(e.target.value);
   };
@@ -175,7 +177,7 @@ const PosOrders = () => {
       const data = await response.json();
       setOrderItems([
         ...orderItems,
-       data
+        data
       ]);
       setBarcode('')
     } catch (err) {
@@ -290,6 +292,7 @@ const PosOrders = () => {
                         <div className="px-4 py-2 flex-1 border-r">
                           <input
                             type="number"
+                            min='0'
                             value={item.discountPercent}
                             onChange={(e) => handleDiscountChange(index, 'discountPercent', e.target.value)}
                             className="input w-16"
@@ -298,6 +301,7 @@ const PosOrders = () => {
                         <div className="px-4 py-2 flex-1 border-r">
                           <input
                             type="number"
+                            min='0'
                             value={item.discountAmount}
                             onChange={(e) => handleDiscountChange(index, 'discountAmount', e.target.value)}
                             className="input w-16"
@@ -407,9 +411,9 @@ const PosOrders = () => {
               <dialog id="my_modal_3" className="modal">
                 <div className="modal-box w-11/12 max-w-7xl fixed  top-5">
                   <form method="dialog">
-                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕                                                    </button>
                   </form>
-                  <Modal />
+                  <Modal setExchangeAmount={setExchangeAmount} setUserInfo={setUserInfo} setExchangeDetail={setExchangeDetail} />
                 </div>
               </dialog>
               <div className="bg-[#c1793c] w-1/12 cursor-pointer" onClick={handleOpenModalList}>
@@ -443,7 +447,10 @@ const PosOrders = () => {
               </div>
 
               <div className={` cursor-pointer w-2/12 ${userInfo.phone ? 'bg-[#00a65a]' : "bg-[#00a65b3f] "}`} >
-                <button disabled={!userInfo.phone} onClick={handlePaymentClick}>
+                <button
+                  disabled={ orderItems.length === 0||!userInfo.phone }
+                  onClick={handlePaymentClick}
+                >
                   <p className="text-4xl font-bold py-4 text-white">
                     Payment
                   </p>
