@@ -104,6 +104,7 @@ const PosOrders = () => {
         ...selectedProduct,
         ...sizeData,
         size,
+        productId:selectedProduct._id,
         quantity: 1,
         discountPercent,
         discountAmount,
@@ -187,6 +188,7 @@ const PosOrders = () => {
   useEffect(() => {
     handleSearch()
   }, [barcode])
+console.log(orderItems);
 
   return (
     <React.Fragment>
@@ -197,7 +199,7 @@ const PosOrders = () => {
               <div className="w-full">
                 <FilterDropdown setProducts={setProducts} />
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 max-h-[600px] overflow-y-scroll mb-14">
                 {products?.map((product, index) => (
                   <div
                     key={index}
@@ -463,7 +465,7 @@ const PosOrders = () => {
           <SizeModal product={selectedProduct} onSizeSelect={handleSizeSelect} onClose={() => setModalVisible(false)} />
         )}
         {paymentModalVisible && (
-          <PaymentModal setPaymentModalVisible={setPaymentModalVisible} userInfo={userInfo} orderItems={orderItems} discount={discount} calculateTotalAmount={calculateTotalAmount} finalAmount={totalTk} />
+          <PaymentModal exchangeDetails={exchangeDetails} exchangeAmount={exchangeAmount}  totalDiscount={totalDiscount} setPaymentModalVisible={setPaymentModalVisible} userInfo={userInfo} orderItems={orderItems} discount={discount} calculateTotalAmount={calculateTotalAmount} finalAmount={totalTk} />
 
         )}
 

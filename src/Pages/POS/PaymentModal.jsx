@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { PiPlus } from 'react-icons/pi';
 import { TbTrash } from 'react-icons/tb';
+import baseUrl from '../../Components/services/baseUrl';
 
-const PaymentModal = ({ setPaymentModalVisible, finalAmount }) => {
-
+const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItems, discount ,exchangeDetails , exchangeAmount }) => {
+  const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState([
     { id: 1, type: 'Cash', option: '', amount: '' },
   ]);
   const [receiveCash, setReceiveCash] = useState(0);
   const [remark, setRemark] = useState('');
-
+  const totalDiscount = discount.type === 'percentage' ? finalAmount * discount.value / 100 : discount.value
   const addPaymentRow = () => {
     const newPayment = { id: Date.now(), type: 'Cash', option: '', amount: '' };
     setPayments([...payments, newPayment]);
@@ -30,9 +31,64 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount }) => {
     (acc, payment) => acc + Number(payment.amount || 0),
     0
   );
-
   const change = totalAmount - finalAmount + receiveCash;
+  const totalOrderDiscount = orderItems.reduce((acc, item) => acc + item.discountAmount * item.quantity, 0);
 
+  const handleCheckOut = async () => {
+    setLoading(true); 
+    const userIdString = localStorage.getItem('userId');
+    const userId = JSON.parse(userIdString);
+    const orderData = {
+      serialId: 'showroom',
+      name: userInfo.name,
+      phone: userInfo.phone,
+      deliveryCharge: 0,
+      address: userInfo.address,
+      orderNotes: remark,
+      cartItems: orderItems.map((item) => ({
+        productId: item.productId,
+        title: item.productName,
+        quantity: item.quantity,
+        price: item.salePrice,
+        discountAmount: item.discountAmount,
+        size: item.size,
+      })),
+      paymentMethod: 'Cash on Delivery',
+      totalAmount: finalAmount,
+      userId: null,
+      discount: Number(totalDiscount) + Number(totalOrderDiscount),
+      grandTotal: finalAmount,
+      advanced: totalAmount + receiveCash,
+      dueAmount: 0,
+      note: '',
+      area: '',
+      manager: userId,
+      payments,
+      exchangeAmount,
+      exchangeDetails
+    };
+    try {
+      const response = await fetch(`${baseUrl}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+      if (response.ok) {
+        const responseData = await response.json();
+        alert('Order placed successfully!');
+        window.location.href = `/invoice/${responseData.order._id}`;
+        console.log(responseData);
+      } else {
+        console.error('There was an error placing the order:', response.statusText);
+      }
+    } catch (error) {
+      console.error('There was an error placing the order:', error);
+    } finally {
+      setLoading(false); // Set loading to false after the request completes
+    }
+  };
   return (
     <div className="fixed w-full inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
       <div className="bg-white min-h-4/6 fixed top-6 rounded-lg shadow-lg p-6 w-full max-w-7xl h-fit ">
@@ -44,21 +100,19 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount }) => {
               <tbody>
                 <tr>
                   <td className="font-medium py-1">Total Amount:</td>
-                  <td className="text-right">{finalAmount.toFixed(2)}</td>
+                  <td className="text-right">{finalAmount.toFixed(2)}TK</td>
                 </tr>
                 <tr>
                   <td className="font-medium py-1">Paid Amount:</td>
-                  <td className="text-right">{totalAmount.toFixed(2)}</td>
+                  <td className="text-right">{totalAmount.toFixed(2)}TK</td>
                 </tr>
                 <tr>
-                  <td className="font-medium py-1">Total Advance:</td>
-                  <td className="text-right">0 TK</td>
+                  <td className="font-medium py-1">Total Change:</td>
+                  <td className="text-right">{change.toFixed(2)}TK</td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-
           {/* Payment Type Section */}
           <div className="w-2/3 space-y-4">
             <div className="flex justify-center items-center mb-4 bg-[#7a8882]">
@@ -78,7 +132,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount }) => {
                     >
                       <option value="Cash">Cash</option>
                       <option value="Card">Card</option>
-                      <option value="Online">Online</option>
+                      <option value="Mobile Bank">Mobile Bank</option>
                       {/* Add more payment types as needed */}
                     </select>
                   </div>
@@ -122,23 +176,19 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount }) => {
                 </div>
               ))}
             </div>
-
-            {/* Receive Cash, Change, Remark */}
             <div className="mt-4 space-y-4">
-              <input
-                type="number"
-                placeholder="Receive Cash"
-                value={receiveCash}
-                onChange={(e) => setReceiveCash(Number(e.target.value))}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="text"
-                placeholder="Change"
-                value={change.toFixed(2)}
-                readOnly
-                className="w-full p-2 border rounded"
-              />
+              <label className="form-control w-full ">
+                <div className="label">
+                  <span className="label-text">Change:</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Change"
+                  value={change.toFixed(2)}
+                  readOnly
+                  className="w-full p-2 border rounded"
+                />
+              </label>
               <input
                 type="text"
                 placeholder="Remark"
@@ -152,12 +202,12 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount }) => {
                 Cancel [Esc]
               </button>
               <button
-                disabled={finalAmount >= finalAmount + receiveCash}
-                className="bg-green-500 text-white px-6 py-2 rounded w-full"
+                className={`bg-green-500 text-white px-6 py-2 rounded w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handleCheckOut}
+                disabled={loading} // Disable button when loading
               >
-                Checkout
+                {loading ? 'Processing...' : 'Checkout'}
               </button>
-
             </div>
           </div>
         </div>

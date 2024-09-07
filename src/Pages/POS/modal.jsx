@@ -82,7 +82,7 @@ export default function Modal({setUserInfo, setExchangeAmount, setExchangeDetail
       invoiceNo: data.invoice,
       items:products
     })
-    
+    document.getElementById('my_modal_3').close()
   };
 
   return (
