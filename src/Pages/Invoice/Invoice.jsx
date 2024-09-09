@@ -54,18 +54,18 @@ const Invoice = () => {
   });
 
   return (
-    <div className="w-[80mm] h-screen mx-auto p-2 bg-white ">
+    <div className="w-[90mm] h-screen mx-auto p-2 bg-white">
       <div className="text-center mb-4">
         <h1 className="text-lg font-bold">Estarch</h1>
-        <p className="text-xs px-12">9/A (Front gate of Masjid E Noor), Near Abul Hotel, Chowdhury Para,</p>
-        <p className="text-xs">Malibag, Dhaka-1219</p>
-        <p className='text-xs'>Email: estarch247@gmail.com</p>
-        <p className="text-xs">Mobile: +880 1706-060651</p>
+        <p className="text-[14px] font-bold px-12">9/A (Front gate of Masjid E Noor), Near Abul Hotel, Chowdhury Para,</p>
+        <p className="text-[14px] font-bold">Malibag, Dhaka-1219</p>
+        <p className='text-[14px] font-bold'>Email: estarch247@gmail.com</p>
+        <p className="text-[14px] font-bold">Mobile: +880 1706-060651</p>
       </div>
-      <section className="mb-4 text-xs">
+      <section className="mb-4 text-[12px] font-bold">
         <div className="flex justify-between">
           <div>
-            <p className="font-semibold">Invoice: {order.invoice}</p>
+            <p className="">Invoice: {order.invoice}</p>
             <p>Served by: {order.manager.fullName}</p>
           </div>
           <div className="text-right">
@@ -88,18 +88,18 @@ const Invoice = () => {
         <tbody>
           {order.cartItems.map((item, index) => (
             <tr key={index}>
-              <td className="py-1">{item.SKU} - {item.barcode} ({item.size})</td>
-              <td className="py-1">{item.quantity}</td>
-              <td className="py-1">{item.price + item.discountAmount}</td>
-              <td className="py-1">{item.discountAmount.toFixed(2)}</td>
-              <td className="py-1">{item.price.toFixed(2)}</td>
+              <td className="py-1 text-[13px] font-bold">{item.SKU} - {item.barcode} ({item.size})</td>
+              <td className="py-1 text-[13px] font-bold">{item.quantity}</td>
+              <td className="py-1 text-[13px] font-bold">{item.price + item.discountAmount}</td>
+              <td className="py-1 text-[13px] font-bold">{item.discountAmount.toFixed(2)}</td>
+              <td className="py-1 text-[13px] font-bold">{item.price.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
       </table>
       {
         order.exchangeAmount  ? <div className=' flex justify-between border-b'>
-        <p className=" ">Exchange</p>
+        <p className=" font-bold">Exchange</p>
         <p className=" ">{order.exchangeDetails.invoiceNo}</p>
       </div> : null
       }
@@ -108,19 +108,19 @@ const Invoice = () => {
       <tbody>
         {order?.exchangeDetails?.items?.map((item, index) => (
           <tr key={index}>
-            <td className="py-1">
+            <td className="py-1 font-bold">
               {item.SKU} - {item.barcode} ({item.size})
             </td>
-            <td className="py-1">{item.quantity}</td>
-            <td className="py-1">{(item.price + item.discountAmount).toFixed(2)}</td>
-            <td className="py-1">{item.discountAmount.toFixed(2)}</td>
-            <td className="py-1">{item.price.toFixed(2)}</td>
+            <td className="py-1 font-bold">{item.quantity}</td>
+            <td className="py-1 font-bold">{(item.price + item.discountAmount)}</td>
+            <td className="py-1 font-bold">{item.discountAmount}</td>
+            <td className="py-1 font-bold">{item.price}</td>
           </tr>
         ))}
       </tbody>
     </table> : null
      }
-      <section className="mb-4 text-xs">
+      <section className="mb-4 text-xs font-bold">
         <div className="flex justify-between">
           <p>Sub Total</p>
           <p>{order.totalAmount + order.discount}</p>
@@ -130,7 +130,7 @@ const Invoice = () => {
           <p>{order.discount}</p>
         </div>
         <div className="flex justify-between">
-          <p className='font-semibold'>VAT+</p>
+          <p className=''>VAT+</p>
           <p className='font-semibold'>included</p>
         </div>
         <div className="flex justify-between font-bold">
@@ -139,7 +139,7 @@ const Invoice = () => {
         </div>
       </section>
 
-      <section className="mb-4 text-xs">
+      <section className="mb-4 text-xs font-bold">
         <div className="flex flex-col">
           
           {order.payments.map((item, index) => (
@@ -163,16 +163,16 @@ const Invoice = () => {
 
       <hr />
 
-      <div className="text-center text-xs text-gray-500">
+      <div className="text-center text-xs  font-bold">
         <Barcode
-          className='barcode -ml-14 h-[50px] my-2'
+          className='barcode -ml-10 h-[50px] my-2'
           value={order.invoice}
           displayValue={true}
           lineColor="#00000"
-          height={55}
+          height={60}
         />
         <hr />
-        <p className='text-lg text-black font-semibold'>Thank You</p>
+        <p className='text-lg text-black font-bold'>Thank You</p>
         <p>Item sold will not be refunded.</p>
         <p>Exchange will be executed at any time with good condition of the product with money receipt.</p>
         <p>Thanks for allowing us to serve you.</p>
