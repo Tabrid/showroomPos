@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import baseUrl from './services/baseUrl';
 
-const HoldSaleModal = ({ isOpen, onClose, orderItems, userInfo }) => {
+const HoldSaleModal = ({ isOpen, onClose, orderItems, userInfo,setOrders,setUserInfo ,setOrderItems}) => {
     const [note, setNote] = useState('');
 
     if (!isOpen) return null;
-    
+
     const handleHold = async () => {
         try {
             const response = await fetch(`${baseUrl}/api/showroomOrderHold`, {
@@ -18,8 +18,15 @@ const HoldSaleModal = ({ isOpen, onClose, orderItems, userInfo }) => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Hold created successfully:', data);
-                onClose(); 
+                setNote('')
+                setUserInfo({
+                    phone: '',
+                    name: '',
+                    address: ''
+                })
+                setOrders([])
+                setOrderItems([])
+                onClose();
             } else {
                 console.error('Failed to create hold:', response.statusText);
             }

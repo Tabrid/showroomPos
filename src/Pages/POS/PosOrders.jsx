@@ -45,9 +45,6 @@ const PosOrders = () => {
   const handleCloseModalList = () => {
     setIsModalOpenList(false);
   };
-
-  console.log(orderItems);
-
   const fetchUserData = async (phone) => {
     try {
       const response = await fetch(`${baseUrl}/api/orders/orders/${phone}`);
@@ -85,6 +82,8 @@ const PosOrders = () => {
   const handlePaymentClick = () => {
     setPaymentModalVisible(true);
   };
+
+
   const handleProductClick = (product) => {
     setSelectedProduct(product);
     setModalVisible(true);
@@ -188,7 +187,21 @@ const PosOrders = () => {
   useEffect(() => {
     handleSearch()
   }, [barcode])
-console.log(orderItems);
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" && orderItems.length === 0 && totalTk <=0 ) {
+      handlePaymentClick();
+    }
+  };
+  useEffect(() => {
+    // Attach the event listener when the component mounts
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <React.Fragment>
@@ -203,13 +216,13 @@ console.log(orderItems);
                 {products?.map((product, index) => (
                   <div
                     key={index}
-                    className="cursor-pointer card card-compact bg-base-100 w-[140px] h-[220px] shadow-xl rounded-none mt-2"
+                    className="cursor-pointer card card-compact bg-base-100 w-[140px] h-[240px] shadow-xl rounded-none mt-2"
                     onClick={() => handleProductClick(product)}
                   >
-                    <div className="p-2 h-[150px]">
+                    <div className="p-2 h-[170px]">
                       <figure>
                         <img
-                          className="h-[140px] w-[130px]"
+                          className="h-full w-[130px]"
                           src={`${baseUrl}/${product.images[0]}`}
                           alt={product.productName}
                         />
@@ -289,7 +302,7 @@ console.log(orderItems);
                   <div className="h-[200px] overflow-y-scroll ">
                     {orderItems.map((item, index) => (
                       <div key={index} className="flex items-center border-b">
-                        <div className="px-4 py-2 flex-grow w-28 text-xs  border-r">{item.productName} ({item.size})<br />Barcode: {item.barcode}</div>
+                        <div className="px-4 py-2 flex-grow w-28 text-xs  border-r">{item.productName} ({item.size})<br />Barcode: {item.barcode} <br /> SKU: {item.SKU}</div>
                         <div className="px-4 py-2 flex-1 border-r">{item.regularPrice}</div>
                         <div className="px-4 py-2 flex-1 border-r">
                           <input
@@ -424,12 +437,12 @@ console.log(orderItems);
                 </p>
               </div>
               <HoldList setUserInfo={setUserInfo} setOrderItems={setOrderItems} isOpen={isModalOpenList} onClose={handleCloseModalList} />
-              <div className="bg-[#ff890f] w-1/12 cursor-pointer" onClick={handleOpenModal}>
+              <button disabled={orderItems.length === 0} className="bg-[#ff890f] w-1/12 " onClick={handleOpenModal}>
                 <p className="text-4xl font-bold py-4 text-white">
                   Hold
                 </p>
-              </div>
-              <HoldSaleModal userInfo={userInfo} orderItems={orderItems} isOpen={isModalOpen} onClose={handleCloseModal} />
+              </button>
+              <HoldSaleModal setOrderItems={setOrderItems} setUserInfo={setUserInfo} setOrders={setOrders} userInfo={userInfo} orderItems={orderItems} isOpen={isModalOpen} onClose={handleCloseModal} />
               <div
                 className="bg-[#f31250] w-1/12 cursor-pointer"
                 onClick={() => {
@@ -448,9 +461,9 @@ console.log(orderItems);
                 </p>
               </div>
 
-              <div className={` cursor-pointer w-2/12 ${userInfo.phone ? 'bg-[#00a65a]' : "bg-[#00a65b3f] "}`} >
+              <div className={` cursor-pointer w-2/12 ${orderItems.length !== 0 || totalTk <=0 ? 'bg-[#00a65a]' : "bg-[#00a65b3f] "}`} >
                 <button
-                  disabled={ orderItems.length === 0||!userInfo.phone }
+                  disabled={ orderItems.length === 0 || totalTk <=0}
                   onClick={handlePaymentClick}
                 >
                   <p className="text-4xl font-bold py-4 text-white">

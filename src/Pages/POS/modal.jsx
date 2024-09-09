@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import baseUrl from '../../Components/services/baseUrl';
-export default function Modal({setUserInfo, setExchangeAmount, setExchangeDetail}) {
+export default function Modal({ setUserInfo, setExchangeAmount, setExchangeDetail }) {
   const [invoiceNo, setInvoiceNo] = useState('');
   const [exchangeDetails, setExchangeDetails] = useState({
     exchangeProduct: 0,
@@ -10,7 +10,7 @@ export default function Modal({setUserInfo, setExchangeAmount, setExchangeDetail
     difference: 0,
   });
   const [products, setProducts] = useState([]);
-  const [data , setData] = useState({})
+  const [data, setData] = useState({})
 
   useEffect(() => {
     if (invoiceNo) {
@@ -80,11 +80,28 @@ export default function Modal({setUserInfo, setExchangeAmount, setExchangeDetail
     setExchangeAmount(exchangeDetails.cartTotal)
     setExchangeDetail({
       invoiceNo: data.invoice,
-      items:products
+      items: products
     })
     document.getElementById('my_modal_3').close()
   };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      clearExchange();
+    }
+    else if (event.key === "Enter") {
+      continueExchange();
+    }
+  };
 
+  useEffect(() => {
+    // Attach the event listener when the component mounts
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
   return (
     <div className="flex bg-white  flex-col top-5 items-center justify-center w-full h-5/6 py-2">
       <div className="w-full p-6 bg-white rounded-md">
@@ -177,7 +194,7 @@ export default function Modal({setUserInfo, setExchangeAmount, setExchangeDetail
             onClick={clearExchange}
             className="w-96 p-2 mr-2 text-white bg-red-500 rounded"
           >
-            Clear Exchange
+            Clear Exchange(Esc)
           </button>
           <button
             onClick={continueExchange}

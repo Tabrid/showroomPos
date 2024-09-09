@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PiPlus } from 'react-icons/pi';
 import { TbTrash } from 'react-icons/tb';
 import baseUrl from '../../Components/services/baseUrl';
@@ -35,7 +35,10 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
   const totalOrderDiscount = orderItems.reduce((acc, item) => acc + item.discountAmount * item.quantity, 0);
 
   const handleCheckOut = async () => {
-    setLoading(true); 
+    if (change <= 0) {
+      alert('Pay More....!');
+    } else {
+      setLoading(true); 
     const userIdString = localStorage.getItem('userId');
     const userId = JSON.parse(userIdString);
     const orderData = {
@@ -88,7 +91,26 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
     } finally {
       setLoading(false); // Set loading to false after the request completes
     }
+    }
   };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      setPaymentModalVisible(false);
+    }
+    else if (event.key === "Enter") {
+      handleCheckOut(); 
+    }
+  };
+
+  useEffect(() => {
+    // Attach the event listener when the component mounts
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
   return (
     <div className="fixed w-full inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
       <div className="bg-white min-h-4/6 fixed top-6 rounded-lg shadow-lg p-6 w-full max-w-7xl h-fit ">
