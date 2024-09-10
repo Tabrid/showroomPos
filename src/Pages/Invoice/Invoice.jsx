@@ -91,8 +91,8 @@ const Invoice = () => {
               <td className="py-1 text-[13px] font-bold">{item.SKU} - {item.barcode} ({item.size})</td>
               <td className="py-1 text-[13px] font-bold">{item.quantity}</td>
               <td className="py-1 text-[13px] font-bold">{item.price + item.discountAmount}</td>
-              <td className="py-1 text-[13px] font-bold">{item.discountAmount.toFixed(2)}</td>
-              <td className="py-1 text-[13px] font-bold">{item.price.toFixed(2)}</td>
+              <td className="py-1 text-[13px] font-bold">{item.discountAmount}</td>
+              <td className="py-1 text-[13px] font-bold">{item.price}</td>
             </tr>
           ))}
         </tbody>
