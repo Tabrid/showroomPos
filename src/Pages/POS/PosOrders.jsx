@@ -10,6 +10,7 @@ import FilterDropdown from '../../Components/productFilter'
 import HoldList from "./HoldList";
 import HoldSaleModal from "../../Components/HoldSaleModal";
 import { CiBarcode } from "react-icons/ci";
+import altImg from '../../assets/avater.jpg'
 const PosOrders = () => {
   document.title = "Estarch | Pos Orders";
   const [products, setProducts] = useState([]);
@@ -93,10 +94,11 @@ const PosOrders = () => {
     const { price, discountPercent = 0, discountAmount = 0, ...sizeData } = selectedProduct.sizeDetails.find(
       (detail) => detail.size === size
     );
-
     const afterDiscount = discountAmount > 0
       ? price - discountAmount
       : price - (price * discountPercent) / 100;
+
+
     setOrderItems([
       ...orderItems,
       {
@@ -188,21 +190,6 @@ const PosOrders = () => {
     handleSearch()
   }, [barcode])
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" && orderItems.length === 0 && totalTk <=0 ) {
-      handlePaymentClick();
-    }
-  };
-  useEffect(() => {
-    // Attach the event listener when the component mounts
-    window.addEventListener("keydown", handleKeyDown);
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   return (
     <React.Fragment>
       <div className="mt-2">
@@ -223,7 +210,7 @@ const PosOrders = () => {
                       <figure>
                         <img
                           className="h-full w-[130px]"
-                          src={`${baseUrl}/${product.images[0]}`}
+                          src={product.images[0]?`${baseUrl}/${product.images[0]}`:altImg}
                           alt={product.productName}
                         />
                       </figure>
@@ -299,7 +286,7 @@ const PosOrders = () => {
                     <div className="px-4 py-2 flex-1 border-b border-green-500">Action</div>
                   </div>
                   {/* Rows */}
-                  <div className="h-[200px] overflow-y-scroll ">
+                  <div className="h-[400px] overflow-y-scroll ">
                     {orderItems.map((item, index) => (
                       <div key={index} className="flex items-center border-b">
                         <div className="px-4 py-2 flex-grow w-28 text-xs  border-r">{item.productName} ({item.size})<br />Barcode: {item.barcode} <br /> SKU: {item.SKU}</div>

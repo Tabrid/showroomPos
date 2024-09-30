@@ -6,9 +6,11 @@ import baseUrl from "../../Components/services/baseUrl";
 function Dashboard() {
     const { logout } = useLogout();
     const [startDate, setStartDate] = useState('');
+    const [singleDate, setSingleDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [data, setData] = useState({});
     const [orders, setOrders] = useState([]);
+
 
     // Fetch user ID and initialize dashboard data
     useEffect(() => {
@@ -19,18 +21,18 @@ function Dashboard() {
             if (userIdString) {
                 userId = JSON.parse(userIdString);
                 // Optionally: fetch and set initial data here based on userId
-                fetchFilteredData(userId, startDate, endDate); // Assuming you need userId to fetch data
+                fetchFilteredData(userId, startDate, endDate , singleDate); // Assuming you need userId to fetch data
             } else {
                 console.warn('No userId found in localStorage');
             }
         } catch (error) {
             console.error('Error parsing userId from localStorage:', error);
         }
-    }, []); // Add dependencies if needed
+    }, [startDate, endDate , singleDate]); // Add dependencies if needed
 
-    const fetchFilteredData = async (userId, startDate = '', endDate = '') => {
+    const fetchFilteredData = async (userId, startDate = '', endDate = '' , singleDate = '' ) => {
         try {
-            const response = await fetch(`${baseUrl}/api/orders/manager/${userId}/stats?startDate=${startDate}&endDate=${endDate}`);
+            const response = await fetch(`${baseUrl}/api/orders/manager/${userId}/stats?startDate=${startDate}&endDate=${endDate}&singleDate=${singleDate}`);
             const result = await response.json();
             console.log(result);
 
@@ -59,8 +61,25 @@ function Dashboard() {
         // Fetch and filter data based on selected dates
         fetchFilteredData(userId, startDate, endDate);
     };
-    const handleView = (id) =>{
+    const handleView = (id) => {
         window.location.href = `/invoice/${id}`;
+    }
+
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+
+        // Format options for the date and time
+        const options = {
+            year: 'numeric',
+            month: 'long', // Full month name, use 'short' for abbreviated month
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true // Use 12-hour format if you want AM/PM
+        };
+
+        return date.toLocaleDateString('en-US', options);
     }
     return (
         <div className="p-4 bg-gray-100 min-h-screen">
@@ -69,6 +88,13 @@ function Dashboard() {
                     <button className="btn w-36 bg-[#ff890f] hover:bg-orange-500">POS</button>
                 </Link>
                 <div className="flex space-x-4 mb-4">
+                    <input
+                        type="date"
+                        value={singleDate}
+                        onChange={(e) => setSingleDate(e.target.value)}
+                        placeholder="Choose Your Date"
+                        className="border p-2 rounded"
+                    />
                     <div className="flex justify-center items-center gap-5">
                         <p className="block text-gray-700">Start Date</p>
                         <input
@@ -168,13 +194,20 @@ function Dashboard() {
                         <div className="h-[500px] overflow-y-scroll">
                             {orders.map((data, i) => (
                                 <div key={data._id} className="grid grid-cols-6 bg-gray-50 border-b">
-                                    <div className="p-4 border">{i + 1}</div>
-                                    <div className="p-4 border">{data.name}<br />{data.phone} <br /> {data.address}</div>
+                                    <div className="p-4 border">{i + 1}<br /> <br /> {formatDateTime(data.createdAt)} </div>
+                                    <div className="p-4 border">
+                                        {data.name ? data.name : 'Guest'}
+                                        <br />
+                                        {data.phone}
+                                        <br />
+                                        {data.address}
+                                    </div>
+
                                     <div className="p-4 border">
                                         Invoice No: {data.invoice}
                                         <br />
                                         Malibag , Dhaka 1219
-                                        
+
                                     </div>
                                     <div className="p-4 border">
                                         Item: {data.cartItems.length}
@@ -192,7 +225,7 @@ function Dashboard() {
                                     </div>
                                     <div className="p-4 border">
                                         <div className="relative inline-block text-left">
-                                            <button onClick={()=> handleView(data._id)} className="bg-orange-500 text-white px-4 py-2 rounded">View</button>
+                                            <button onClick={() => handleView(data._id)} className="bg-orange-500 text-white px-4 py-2 rounded">View</button>
                                         </div>
                                     </div>
                                 </div>

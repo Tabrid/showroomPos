@@ -3,16 +3,46 @@ import { PiPlus } from 'react-icons/pi';
 import { TbTrash } from 'react-icons/tb';
 import baseUrl from '../../Components/services/baseUrl';
 
-const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItems, discount ,exchangeDetails , exchangeAmount }) => {
+const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItems, discount, exchangeDetails, exchangeAmount }) => {
   const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState([
-    { id: 1, type: 'Cash', option: '', amount: '' },
+    { id: 1, accountType: 'Cash', paymentOption: '', accountNumber: '', amount: '' },
   ]);
-  const [receiveCash, setReceiveCash] = useState(0);
-  const [remark, setRemark] = useState('');
-  const totalDiscount = discount.type === 'percentage' ? finalAmount * discount.value / 100 : discount.value
+  const [accounts, setAccounts] = useState([]); // Store the accounts data
+
+  // Fetch accounts data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/payment/showroom-accounts`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setAccounts(data[0].accounts); // Assuming "accounts" is inside the first object
+        }
+      } catch (error) {
+        console.error('Error fetching accounts:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  // Handle the account type selection
+  const handleAccountTypeChange = (id, value) => {
+    // Find payment options for the selected account type
+    const selectedAccount = accounts.find((acc) => acc.accountType === value);
+    const paymentOptions = selectedAccount ? selectedAccount.payments : [];
+
+    setPayments((prevPayments) =>
+      prevPayments.map((payment) =>
+        payment.id === id
+          ? { ...payment, accountType: value, paymentOption: '', accountNumber: '', paymentOptions } // Reset paymentOption and set new options
+          : payment
+      )
+    );
+  };
+
   const addPaymentRow = () => {
-    const newPayment = { id: Date.now(), type: 'Cash', option: '', amount: '' };
+    const newPayment = { id: Date.now(), accountType: '', paymentOption: '', amount: '', paymentOptions: [] };
     setPayments([...payments, newPayment]);
   };
 
@@ -21,76 +51,94 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
   };
 
   const handleInputChange = (id, field, value) => {
-    const updatedPayments = payments.map((payment) =>
-      payment.id === id ? { ...payment, [field]: value } : payment
+    setPayments((prevPayments) =>
+      prevPayments.map((payment) => {
+        if (payment.id === id) {
+          if (field === 'paymentOption') {
+            // Find the selected account and payment option details
+            const selectedAccount = accounts.find((acc) => acc.accountType === payment.accountType);
+            const selectedPaymentOption = selectedAccount?.payments.find((opt) => opt.paymentOption === value);
+            const accountNumber = selectedPaymentOption?.accountNumber || '';
+
+            // Update payment option and set the corresponding account number
+            return { ...payment, paymentOption: value, accountNumber };
+          }
+          // For other fields, simply update the value
+          return { ...payment, [field]: value };
+        }
+        return payment;
+      })
     );
-    setPayments(updatedPayments);
   };
+
 
   const totalAmount = payments.reduce(
     (acc, payment) => acc + Number(payment.amount || 0),
     0
   );
-  const change = totalAmount - finalAmount + receiveCash;
+  const [remark, setRemark] = useState('');
+  const totalDiscount = discount.type === 'percentage' ? finalAmount * discount.value / 100 : discount.value
+
+  const change = totalAmount - finalAmount;
   const totalOrderDiscount = orderItems.reduce((acc, item) => acc + item.discountAmount * item.quantity, 0);
 
   const handleCheckOut = async () => {
     if (change <= 0) {
       alert('Pay More....!');
     } else {
-      setLoading(true); 
-    const userIdString = localStorage.getItem('userId');
-    const userId = JSON.parse(userIdString);
-    const orderData = {
-      serialId: 'showroom',
-      name: userInfo.name,
-      phone: userInfo.phone,
-      deliveryCharge: 0,
-      address: userInfo.address,
-      orderNotes: remark,
-      cartItems: orderItems.map((item) => ({
-        productId: item.productId,
-        title: item.productName,
-        quantity: item.quantity,
-        price: item.salePrice,
-        discountAmount: item.discountAmount,
-        size: item.size,
-      })),
-      paymentMethod: 'Cash on Delivery',
-      totalAmount: finalAmount,
-      userId: null,
-      discount: Number(totalDiscount) + Number(totalOrderDiscount),
-      grandTotal: finalAmount,
-      advanced: totalAmount + receiveCash,
-      dueAmount: 0,
-      note: '',
-      area: '',
-      manager: userId,
-      payments,
-      exchangeAmount,
-      exchangeDetails
-    };
-    try {
-      const response = await fetch(`${baseUrl}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-      });
-      if (response.ok) {
-        const responseData = await response.json();
-        alert('Order placed successfully!');
-        window.location.href = `/invoice/${responseData.order._id}`;
-        console.log(responseData);
-      } else {
-        console.error('There was an error placing the order:', response.statusText);
+      setLoading(true);
+      const userIdString = localStorage.getItem('userId');
+      const userId = JSON.parse(userIdString);
+      const orderData = {
+        serialId: 'showroom',
+        name: userInfo.name,
+        phone: userInfo.phone,
+        deliveryCharge: 0,
+        address: userInfo.address,
+        orderNotes: remark,
+        cartItems: orderItems.map((item) => ({
+          productId: item.productId,
+          title: item.productName,
+          quantity: item.quantity,
+          price: item.salePrice,
+          discountAmount: item.discountAmount,
+          size: item.size,
+        })),
+        paymentMethod: 'Cash on Delivery',
+        totalAmount: finalAmount,
+        userId: null,
+        discount: Number(totalDiscount) + Number(totalOrderDiscount),
+        grandTotal: finalAmount,
+        advanced: totalAmount,
+        dueAmount: 0,
+        note: '',
+        area: '',
+        manager: userId,
+        payments,
+        exchangeAmount,
+        exchangeDetails
+      };
+      try {
+        const response = await fetch(`${baseUrl}/api/orders/pos-order`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(orderData),
+        });
+        if (response.ok) {
+          const responseData = await response.json();
+          alert('Order placed successfully!');
+          window.location.href = `/invoice/${responseData.order._id}`;
+          console.log(responseData);
+        } else {
+          console.error('There was an error placing the order:', response);
+        }
+      } catch (error) {
+        console.error('There was an error placing the order:', error);
+      } finally {
+        setLoading(false); // Set loading to false after the request completes
       }
-    } catch (error) {
-      console.error('There was an error placing the order:', error);
-    } finally {
-      setLoading(false); // Set loading to false after the request completes
-    }
     }
   };
   const handleKeyDown = (event) => {
@@ -98,7 +146,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
       setPaymentModalVisible(false);
     }
     else if (event.key === "Enter") {
-      handleCheckOut(); 
+      handleCheckOut();
     }
   };
 
@@ -111,6 +159,8 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+  console.log(payments);
+  
   return (
     <div className="fixed w-full inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
       <div className="bg-white min-h-4/6 fixed top-6 rounded-lg shadow-lg p-6 w-full max-w-7xl h-fit ">
@@ -142,35 +192,52 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
                 Total Amount: <span className="text-[#ffd400]">{finalAmount.toFixed(2)} </span>TK
               </h2>
             </div>
-            <div className='max-h-40  overflow-y-scroll'>
-              {payments.map((payment) => (
+            <div className='max-h-40 overflow-y-scroll mt-5 w-full'>
+              {payments?.map((payment) => (
                 <div className="grid grid-cols-5 gap-4 mb-2" key={payment.id}>
                   {/* Payment Type */}
                   <div className="col-span-1">
                     <select
                       className="w-full p-2 border rounded"
-                      value={payment.type}
-                      onChange={(e) => handleInputChange(payment.id, 'type', e.target.value)}
+                      value={payment.accountType}
+                      onChange={(e) => handleAccountTypeChange(payment.id, e.target.value)}
                     >
-                      <option value="Cash">Cash</option>
-                      <option value="Card">Card</option>
-                      <option value="Mobile Bank">Mobile Bank</option>
-                      {/* Add more payment types as needed */}
+                      <option value="">Select Account Type</option>
+                      {accounts.map((account) => (
+                        <option key={account._id} value={account.accountType}>
+                          {account.accountType.charAt(0).toUpperCase() + account.accountType.slice(1)}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
                   {/* Payment Option */}
                   <div className="col-span-1">
-                    <input
-                      type="text"
-                      placeholder="Payment Option"
-                      value={payment.option}
-                      onChange={(e) => handleInputChange(payment.id, 'option', e.target.value)}
+                    <select
                       className="w-full p-2 border rounded"
-                    />
+                      value={payment.paymentOption}
+                      onChange={(e) => handleInputChange(payment.id, 'paymentOption', e.target.value)}
+                    >
+                      <option value="">Account option</option>
+                      {payment?.paymentOptions?.map(option => (
+                        <option key={option._id} value={option.paymentOption}>
+                          {option.paymentOption}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Amount */}
+                  <div className="col-span-1">
+                    <input
+                      type="text"
+                      disabled
+                      placeholder="accountNumber"
+                      value={payment.accountNumber}
+                      onChange={(e) => handleInputChange(payment.id, 'accountNumber', e.target.value)}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
                   <div className="col-span-1">
                     <input
                       type="number"

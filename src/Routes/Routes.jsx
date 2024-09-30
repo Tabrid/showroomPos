@@ -6,6 +6,8 @@ import Login from "../Pages/Login/Login";
 import AdminProtected from "./AdminProtected";
 import Dashboard from "../Pages/Dashboard/Dashboard";
 import Invoice from "../Pages/Invoice/Invoice";
+import ProductList from "../Pages/Account/ProductList";
+
 
 
 
@@ -26,5 +28,9 @@ export const router = createBrowserRouter([
   {
     path:'/login',
     element:<Login/>
-  }
+  },
+  {
+    path:'/account',
+    element:<ProductList/>
+  },
 ]);

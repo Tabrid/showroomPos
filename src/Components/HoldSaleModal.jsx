@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import baseUrl from './services/baseUrl';
 
-const HoldSaleModal = ({ isOpen, onClose, orderItems, userInfo,setOrders,setUserInfo ,setOrderItems}) => {
+const HoldSaleModal = ({ isOpen, onClose, orderItems, userInfo, setOrders, setUserInfo, setOrderItems }) => {
     const [note, setNote] = useState('');
 
     if (!isOpen) return null;
 
     const handleHold = async () => {
+        const userIdString = localStorage.getItem('userId');
+        const userId = JSON.parse(userIdString);
         try {
             const response = await fetch(`${baseUrl}/api/showroomOrderHold`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ orderItems, userInfo, note }),
+                body: JSON.stringify({ orderItems, userInfo, note , user:userId }),
             });
 
             if (response.ok) {

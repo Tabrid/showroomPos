@@ -12,8 +12,22 @@ const HoldList = ({ isOpen, onClose, setUserInfo, setOrderItems }) => {
     }, [isOpen]);
 
     const fetchSalesData = async () => {
+        const userIdString = localStorage.getItem('userId');
+        if (!userIdString) {
+            console.error('User ID not found in localStorage.');
+            return;
+        }
+
+        let userId;
         try {
-            const response = await fetch(`${baseUrl}/api/showroomOrderHold`);
+            userId = JSON.parse(userIdString);
+        } catch (error) {
+            console.error('Error parsing user ID from localStorage:', error);
+            return;
+        }
+
+        try {
+            const response = await fetch(`${baseUrl}/api/showroomOrderHold/user/${userId}`);
             if (response.ok) {
                 const data = await response.json();
                 setSales(data);
@@ -24,6 +38,7 @@ const HoldList = ({ isOpen, onClose, setUserInfo, setOrderItems }) => {
             console.error('Error fetching sales data:', error);
         }
     };
+
 
     const handleRestore = async (sale) => {
         setOrderItems(sale.orderItems)
@@ -87,9 +102,9 @@ const HoldList = ({ isOpen, onClose, setUserInfo, setOrderItems }) => {
                             {sales.map((sale, index) => (
                                 <tr key={sale.id} className="border-b">
                                     <td className="py-2">{index + 1}</td>
-                                    <td>{sale.userInfo.name}</td>
-                                    <td>{formatDateTime(sale.createdAt)}</td>
-                                    <td>{sale.note}</td>
+                                    <td>{sale?.userInfo?.name}</td>
+                                    <td>{formatDateTime(sale?.createdAt)}</td>
+                                    <td>{sale?.note}</td>
                                     <td className="flex space-x-2">
                                         <button
                                             onClick={() => handleRestore(sale)}

@@ -144,8 +144,8 @@ const Invoice = () => {
           
           {order.payments.map((item, index) => (
             <div key={index} className="flex  my-[2px]">
-              <div className="flex-1 text-start  ">{item.type}</div>
-              <div className="flex-1  text-center">{item.option}</div>
+              <div className="flex-1 text-start  ">{item.accountType}</div>
+              <div className="flex-1  text-center">{item.paymentOption}</div>
               <div className="flex-1  text-end">{item.amount}</div>
             </div>
           ))}
