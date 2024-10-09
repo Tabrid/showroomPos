@@ -10,7 +10,10 @@ function Dashboard() {
     const [endDate, setEndDate] = useState('');
     const [data, setData] = useState({});
     const [orders, setOrders] = useState([]);
-
+    const [mobileNumber, setMobileNumber] = useState('');
+    const [invoiceNo, setInvoiceNo] = useState('');
+    const [date, setDate] = useState('');
+    const [manager, setManager] = useState('Show Room'); // Default value
 
     // Fetch user ID and initialize dashboard data
     useEffect(() => {
@@ -21,16 +24,16 @@ function Dashboard() {
             if (userIdString) {
                 userId = JSON.parse(userIdString);
                 // Optionally: fetch and set initial data here based on userId
-                fetchFilteredData(userId, startDate, endDate , singleDate); // Assuming you need userId to fetch data
+                fetchFilteredData(userId, startDate, endDate, singleDate); // Assuming you need userId to fetch data
             } else {
                 console.warn('No userId found in localStorage');
             }
         } catch (error) {
             console.error('Error parsing userId from localStorage:', error);
         }
-    }, [startDate, endDate , singleDate]); // Add dependencies if needed
+    }, [startDate, endDate, singleDate]); // Add dependencies if needed
 
-    const fetchFilteredData = async (userId, startDate = '', endDate = '' , singleDate = '' ) => {
+    const fetchFilteredData = async (userId, startDate = '', endDate = '', singleDate = '') => {
         try {
             const response = await fetch(`${baseUrl}/api/orders/manager/${userId}/stats?startDate=${startDate}&endDate=${endDate}&singleDate=${singleDate}`);
             const result = await response.json();
@@ -43,7 +46,7 @@ function Dashboard() {
     };
     const fetchOrder = async () => {
         try {
-            const response = await fetch(`${baseUrl}/api/orders/oders/showrooms`);
+            const response = await fetch(`${baseUrl}/api/orders/oders/showrooms?phone=${mobileNumber}&invoice=${invoiceNo}&date=${date}&manager=${manager}`);
             const result = await response.json();
             console.log(result);
 
@@ -54,7 +57,7 @@ function Dashboard() {
     };
     useEffect(() => {
         fetchOrder()
-    }, []);
+    }, [manager, date, invoiceNo, mobileNumber]);
     const handleDateChange = () => {
         const userIdString = localStorage.getItem('userId');
         const userId = JSON.parse(userIdString);
@@ -87,42 +90,47 @@ function Dashboard() {
                 <Link to='/pos'>
                     <button className="btn w-36 bg-[#ff890f] hover:bg-orange-500">POS</button>
                 </Link>
-                <div className="flex space-x-4 mb-4">
-                    <input
-                        type="date"
-                        value={singleDate}
-                        onChange={(e) => setSingleDate(e.target.value)}
-                        placeholder="Choose Your Date"
-                        className="border p-2 rounded"
-                    />
-                    <div className="flex justify-center items-center gap-5">
-                        <p className="block text-gray-700">Start Date</p>
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="border rounded p-2"
-                        />
-                    </div>
-                    <div className="flex justify-center items-center gap-5">
-                        <p className="block text-gray-700">End Date:</p>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="border rounded p-2"
-                        />
-                    </div>
-                    <button
-                        onClick={handleDateChange}
-                        className="bg-blue-500 text-white px-4 w-36 rounded"
-                    >
-                        Filter
-                    </button>
-                </div>
+                <Link to='/account'>
+                    <button className="btn w-36 bg-[#0f8fff9e] hover:bg-[#0f8fff9e] text-white">Account</button>
+                </Link>
+                <Link to='/closing-cash'>
+                    <button className="btn w-36 bg-[#434cd5b5] hover:bg-[#434cd5b5] text-white">Closing Cash</button>
+                </Link>
                 <button onClick={() => logout()} className="btn w-36 bg-[#f31250] hover:bg-red-500">Log Out</button>
             </div>
-
+            <div className="flex justify-center space-x-4 mb-4 my-3">
+                <input
+                    type="date"
+                    value={singleDate}
+                    onChange={(e) => setSingleDate(e.target.value)}
+                    placeholder="Choose Your Date"
+                    className="border p-2 rounded"
+                />
+                <div className="flex justify-center items-center gap-5">
+                    <p className="block text-gray-700">Start Date</p>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="border rounded p-2"
+                    />
+                </div>
+                <div className="flex justify-center items-center gap-5">
+                    <p className="block text-gray-700">End Date:</p>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="border rounded p-2"
+                    />
+                </div>
+                <button
+                    onClick={handleDateChange}
+                    className="bg-blue-500 text-white px-4 w-36 rounded"
+                >
+                    Filter
+                </button>
+            </div>
             <div>
                 <div className="grid grid-cols-3 gap-4">
                     <div className="bg-white p-4 rounded shadow">
@@ -161,22 +169,32 @@ function Dashboard() {
                         <input
                             type="text"
                             placeholder="Mobile Number"
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
                             className="border p-2 rounded"
                         />
                         <input
                             type="text"
                             placeholder="Invoice No."
+                            value={invoiceNo}
+                            onChange={(e) => setInvoiceNo(e.target.value)}
                             className="border p-2 rounded"
                         />
                         <input
                             type="date"
                             placeholder="Choose Your Date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
                             className="border p-2 rounded"
                         />
-                        <select className="border p-2 rounded">
-                            <option>Show Room</option>
-                            <option>Manager1</option>
-                            <option>Manager2</option>
+                        <select
+                            value={manager}
+                            onChange={(e) => setManager(e.target.value)}
+                            className="border p-2 rounded"
+                        >
+                            <option value="Show Room">Show Room</option>
+                            <option value="Manager1">Manager1</option>
+                            <option value="Manager2">Manager2</option>
                         </select>
                     </div>
 

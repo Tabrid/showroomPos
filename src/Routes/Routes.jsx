@@ -7,6 +7,7 @@ import AdminProtected from "./AdminProtected";
 import Dashboard from "../Pages/Dashboard/Dashboard";
 import Invoice from "../Pages/Invoice/Invoice";
 import ProductList from "../Pages/Account/ProductList";
+import ClosingCash from "../Pages/ClosingCash/ClosingCash";
 
 
 
@@ -32,5 +33,9 @@ export const router = createBrowserRouter([
   {
     path:'/account',
     element:<ProductList/>
+  },
+  {
+    path:'/closing-cash',
+    element:<ClosingCash/>
   },
 ]);

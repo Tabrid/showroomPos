@@ -4,7 +4,7 @@ import baseUrl from "../../Components/services/baseUrl";
 import { PiPlus } from "react-icons/pi";
 import { TbTrash } from "react-icons/tb";
 
-const InvestorWithdrawModal = ({ show, handleClose, fetchIncomingRequest, fetchMyRequest }) => {
+const InvestorWithdrawModal = ({ show, handleClose, fetchMyRequest }) => {
   const [payments, setPayments] = useState([
     { id: 1, accountType: 'Cash', paymentOption: '', accountNumber: '', amount: '' },
   ]);
@@ -97,7 +97,7 @@ const InvestorWithdrawModal = ({ show, handleClose, fetchIncomingRequest, fetchM
       amount: totalAmount,
       accountType: 'Showroom Account',
       senderId,
-      receiverId:'66f318d95e386d16be90a472', 
+      receiverId:'6702bc527a0dfff18feaba4f', 
       type: "showroom-Withdraw",
       payments
     };

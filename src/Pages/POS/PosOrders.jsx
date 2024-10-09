@@ -450,7 +450,7 @@ const PosOrders = () => {
 
               <div className={` cursor-pointer w-2/12 ${orderItems.length !== 0 || totalTk <=0 ? 'bg-[#00a65a]' : "bg-[#00a65b3f] "}`} >
                 <button
-                  disabled={ orderItems.length === 0 || totalTk <=0}
+                  disabled={ orderItems.length === 0 || totalTk < 0}
                   onClick={handlePaymentClick}
                 >
                   <p className="text-4xl font-bold py-4 text-white">

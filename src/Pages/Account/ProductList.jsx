@@ -241,11 +241,7 @@ const ProductList = () => {
               <p className="font-bold  text-[#40A578] text-2xl m-0">Total Amount</p>
               <p className="text-2xl font-bold text-[#40A578]">  {account.totalAmount} ৳ </p>
             </div>
-            <div className="grid grid-cols-4 gap-4 w-full col-span-5">
-              <div className="shadow-md cursor-pointer text-center py-2 bg-[#af47d223]">
-                <p className="font-semibold text-[#AF47D2] m-0">Expense Ecommerce</p>
-                <p className="text-2xl font-bold text-[#AF47D2]">  ৳</p>
-              </div>
+            <div className="grid grid-cols-3 gap-4 w-full col-span-5">
               {account?.accountDetails?.map((account, index) => {
                 let bgColor, textColor;
 

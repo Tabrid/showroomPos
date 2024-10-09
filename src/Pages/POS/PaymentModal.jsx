@@ -83,7 +83,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
   const totalOrderDiscount = orderItems.reduce((acc, item) => acc + item.discountAmount * item.quantity, 0);
 
   const handleCheckOut = async () => {
-    if (change <= 0) {
+    if (change < 0) {
       alert('Pay More....!');
     } else {
       setLoading(true);
