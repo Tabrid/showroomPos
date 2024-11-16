@@ -54,13 +54,13 @@ const Invoice = () => {
   });
 
   return (
-    <div className="w-[90mm] h-screen mx-auto p-2 bg-white">
+    <div className="w-[90mm] h-screen mx-auto p-2  font text-black">
       <div className="text-center mb-4">
-        <h1 className="text-lg font-bold">Estarch</h1>
-        <p className="text-[14px] font-bold px-12">9/A (Front gate of Masjid E Noor), Near Abul Hotel, Chowdhury Para,</p>
-        <p className="text-[14px] font-bold">Malibag, Dhaka-1219</p>
-        <p className='text-[14px] font-bold'>Email: estarch247@gmail.com</p>
-        <p className="text-[14px] font-bold">Mobile: +880 1706-060651</p>
+        <h1 className="text-[24px] font-bold ">Estarch</h1>
+        <p className="text-[15px] font-bold px-12">9/A (Front gate of Masjid E Noor), Near Abul Hotel, Chowdhury Para,</p>
+        <p className="text-[15px] font-bold">Malibag, Dhaka-1219</p>
+        <p className='text-[15px] font-bold'>Email: estarch247@gmail.com</p>
+        <p className="text-[15px] font-bold">Mobile: +880 1706-060651</p>
       </div>
       <section className="mb-4 text-[12px] font-bold">
         <div className="flex justify-between">
@@ -88,7 +88,7 @@ const Invoice = () => {
         <tbody>
           {order.cartItems.map((item, index) => (
             <tr key={index}>
-              <td className="py-1 text-[13px] font-bold">{item.SKU} - {item.barcode} ({item.size})</td>
+              <td className="py-1 text-[13px] font-bold"><span className='text-[12px] p_name'>{item.productId.productName}</span> <br /> {item.SKU} - {item.barcode} ({item.size})</td>
               <td className="py-1 text-[13px] font-bold">{item.quantity}</td>
               <td className="py-1 text-[13px] font-bold">{item.price + item.discountAmount}</td>
               <td className="py-1 text-[13px] font-bold">{item.discountAmount}</td>
@@ -105,7 +105,17 @@ const Invoice = () => {
       }
      {
       order.exchangeAmount  ? <table className="w-full mb-4 text-left text-xs border-collapse">
+         <thead>
+          <tr>
+            <th className="border-b py-1">Description</th>
+            <th className="border-b py-1">Qty</th>
+            <th className="border-b py-1">MRP</th>
+            <th className="border-b py-1">Dis</th>
+            <th className="border-b py-1">Amount</th>
+          </tr>
+        </thead>
       <tbody>
+
         {order?.exchangeDetails?.items?.map((item, index) => (
           <tr key={index}>
             <td className="py-1 font-bold">
@@ -120,7 +130,7 @@ const Invoice = () => {
       </tbody>
     </table> : null
      }
-      <section className="mb-4 text-xs font-bold">
+      <section className="mb-4 text-xs font-bold leading-6">
         <div className="flex justify-between">
           <p>Sub Total</p>
           <p>{order.totalAmount + order.discount}</p>
@@ -138,8 +148,7 @@ const Invoice = () => {
           <p>{order.totalAmount}</p>
         </div>
       </section>
-
-      <section className="mb-4 text-xs font-bold">
+      <section className="mb-4 text-xs font-bold leading-6">
         <div className="flex flex-col">
           
           {order.payments.map((item, index) => (
@@ -164,12 +173,13 @@ const Invoice = () => {
       <hr />
 
       <div className="text-center text-xs  font-bold">
+        <p className='my-2'>Customer Phone: {order?.phone}</p>
         <Barcode
           className='barcode -ml-10 h-[50px] my-2'
           value={order.invoice}
           displayValue={true}
           lineColor="#00000"
-          height={60}
+          height={40}
         />
         <hr />
         <p className='text-lg text-black font-bold'>Thank You</p>
