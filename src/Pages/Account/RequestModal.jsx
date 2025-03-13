@@ -52,7 +52,7 @@ const RequestModal = ({ show, handleClose,moneyRequests,fetchIncomingRequest,fet
                     moneyRequests.map((mq,index) =>
                         <div key={index} className="my-2 bg-orange-50">
                             <div className="shadow-md flex justify-between items-center">
-                              <p className="text-xl p-2"><span className="">{index+1}) </span> <span className="text-green-500">{mq.senderId.fullName}</span> Request to {mq.type} <span className="text-red-500">{mq.amount} ৳</span> </p>  
+                              <p className="text-xl p-2"><span className="">{index+1}) </span> <span className="text-green-500">{mq?.senderId?.fullName}</span> Request to {mq.type} <span className="text-red-500">{mq.amount} ৳</span> </p>  
                                 <div className="flex mr-2 gap-3">
                                     <button onClick={()=>handleAcceptTransaction(mq._id)}  className="text-3xl text-green-500"><TiTick /></button>
                                     <button onClick={()=>handleDeclineTransaction(mq?._id)} className=" text-red-500"><ImCross /></button>

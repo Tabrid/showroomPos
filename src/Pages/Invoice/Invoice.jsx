@@ -133,12 +133,16 @@ const Invoice = () => {
       <section className="mb-4 text-xs font-bold leading-6">
         <div className="flex justify-between">
           <p>Sub Total</p>
-          <p>{order.totalAmount + order.discount}</p>
+          <p>{order.totalAmount + order.discount + (order?.giftCard?.giftAmount || 0)}</p>
         </div>
         <div className="flex justify-between">
           <p>Discount</p>
           <p>{order.discount}</p>
         </div>
+        {order?.giftCard?.giftAmount && <div className="flex justify-between">
+          <p>Gift Card Amount</p>
+          <p>{order?.giftCard?.giftAmount}</p>
+        </div>}
         <div className="flex justify-between">
           <p className=''>VAT+</p>
           <p className='font-semibold'>included</p>

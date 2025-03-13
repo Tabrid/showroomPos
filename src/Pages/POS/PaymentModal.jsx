@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { PiPlus } from 'react-icons/pi';
 import { TbTrash } from 'react-icons/tb';
 import baseUrl from '../../Components/services/baseUrl';
+import { CiBarcode } from "react-icons/ci";
+import axios from 'axios';
+
 
 const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItems, discount, exchangeDetails, exchangeAmount }) => {
   const [loading, setLoading] = useState(false);
@@ -9,6 +12,9 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
     { id: 1, accountType: 'Cash', paymentOption: '', accountNumber: '', amount: '' },
   ]);
   const [accounts, setAccounts] = useState([]); // Store the accounts data
+  const [giftCardCode, setGiftCardCode] = useState('');
+  const [giftAmount, setGiftAmount] = useState(0);
+  const [appliedGiftCard, setAppliedGiftCard] = useState('')
 
   // Fetch accounts data from API
   useEffect(() => {
@@ -23,13 +29,19 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
         console.error('Error fetching accounts:', error);
       }
     };
+    // console.log(payments.length);
+    
 
     fetchData();
   }, []);
   // Handle the account type selection
   const handleAccountTypeChange = (id, value) => {
+    console.log(value);
+    
     // Find payment options for the selected account type
     const selectedAccount = accounts.find((acc) => acc.accountType === value);
+    console.log(selectedAccount);
+    
     const paymentOptions = selectedAccount ? selectedAccount.payments : [];
 
     setPayments((prevPayments) =>
@@ -69,6 +81,45 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
         return payment;
       })
     );
+  };
+
+  const handleGiftCardInputChange = (e) => {
+    setGiftCardCode(e.target.value);
+  };
+
+  const handleApplyGiftCard = async () => {
+    try {
+      // Make the API request to apply the gift card
+      const response = await axios.get(`${baseUrl}/api/giftcards/apply/${giftCardCode}`);
+      setGiftAmount(response.data.amount)
+      setAppliedGiftCard(response.data.code)
+      const newPayment = { id: Date.now(), accountType: 'gift card', paymentOption: '', amount: response.data.amount, paymentOptions: [] };
+      console.log(payments[0].accountType);
+      
+      if(payments.length == 1 && payments[0].amount == ''){
+        setPayments([newPayment]);
+      }else{
+        setPayments([...payments, newPayment]);
+      }
+
+
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error applying gift card:', error);
+
+      // Handle different error scenarios
+      if (error.response) {
+        // If the error is from the server, show an appropriate message
+        const errorMessage = error.response.data || 'An error occurred. Please try again.';
+        alert(`Error: ${errorMessage}`);
+      } else if (error.request) {
+        // If the request was made but no response was received
+        alert('No response from the server. Please try again later.');
+      } else {
+        // Any other errors (e.g., in setting up the request)
+        alert('An error occurred. Please try again.');
+      }
+    }
   };
 
 
@@ -116,7 +167,11 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
         manager: userId,
         payments,
         exchangeAmount,
-        exchangeDetails
+        exchangeDetails,
+        giftCard: {
+          giftAmount,
+          code: appliedGiftCard
+        }
       };
       try {
         const response = await fetch(`${baseUrl}/api/orders/pos-order`, {
@@ -160,7 +215,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
     };
   }, []);
   console.log(payments);
-  
+
   return (
     <div className="fixed w-full inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
       <div className="bg-white min-h-4/6 fixed top-6 rounded-lg shadow-lg p-6 w-full max-w-7xl h-fit ">
@@ -192,6 +247,22 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
                 Total Amount: <span className="text-[#ffd400]">{finalAmount.toFixed(2)} </span>TK
               </h2>
             </div>
+            <label className="input rounded-sm input-bordered flex items-center gap-2 my-3 h-10">
+              <CiBarcode />
+              <input
+                type="text"
+                className="grow"
+                placeholder="Gift Card Code"
+                value={giftCardCode}
+                onChange={handleGiftCardInputChange} // Handle input changes
+              />
+              <button
+                onClick={handleApplyGiftCard} // Handle applying the gift card
+                className="btn btn-sm bg-success text-white"
+              >
+                Apply
+              </button>
+            </label>
             <div className='max-h-40 overflow-y-scroll mt-5 w-full'>
               {payments?.map((payment) => (
                 <div className="grid grid-cols-5 gap-4 mb-2" key={payment.id}>
@@ -200,6 +271,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
                     <select
                       className="w-full p-2 border rounded"
                       value={payment.accountType}
+                      disabled = {payment.accountType == 'gift card'}
                       onChange={(e) => handleAccountTypeChange(payment.id, e.target.value)}
                     >
                       <option value="">Select Account Type</option>
@@ -216,9 +288,10 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
                     <select
                       className="w-full p-2 border rounded"
                       value={payment.paymentOption}
+                      disabled = {payment.accountType == 'gift card' || payment.accountType=='cash'}
                       onChange={(e) => handleInputChange(payment.id, 'paymentOption', e.target.value)}
                     >
-                      <option value="">Account option</option>
+                      <option  value="">Account option</option>
                       {payment?.paymentOptions?.map(option => (
                         <option key={option._id} value={option.paymentOption}>
                           {option.paymentOption}
@@ -240,6 +313,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
                   </div>
                   <div className="col-span-1">
                     <input
+                    disabled={payment.accountType=='gift card'}
                       type="number"
                       placeholder="Amount"
                       value={payment.amount}

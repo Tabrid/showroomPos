@@ -5,8 +5,8 @@ import baseUrl from '../../Components/services/baseUrl';
 const Login = () => {
   // State to handle form data
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: 'showroom-manager@gmail.com',
+    password: '123456',
   });
 
   // State to handle errors
@@ -41,11 +41,13 @@ const Login = () => {
       <img className='w-[20%] my-4' src={logo} alt="" />
       <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl mt-10">
         <form onSubmit={handleSubmit} className="card-body">
+          <p className='text-center font-bold text-xl'>Demo Showroom Pos Login</p>
           <div className="form-control">
             <label className="label">
               <span className="label-text">Email</span>
             </label>
             <input id="email"
+            defaultValue={'showroom-manager@gmail.com'}
               name="email"
               placeholder="Enter email"
               type="email"
@@ -58,6 +60,7 @@ const Login = () => {
               <span className="label-text">Password</span>
             </label>
             <input id="password"
+            defaultValue={'123456'}
               name="password"
               placeholder="Enter password"
               type="password"

@@ -20,17 +20,30 @@ const PosOrders = () => {
   const [discount, setDiscount] = useState({ type: 'percentage', value: 0 });
   const [totalTk, setTotalTK] = useState(0)
   const [barcode, setBarcode] = useState('');
+  const [membershipCode, setMembershipCode] = useState('');
+  const [card, setCard] = useState(null);  // To store the fetched card data
+  const [loading, setLoading] = useState(false);  // To manage loading state
+  const [error, setError] = useState(null);
   const [userInfo, setUserInfo] = useState({
     phone: '',
     name: '',
     address: ''
   });
+
+  const [message, setMessage] = useState("");
+
+
   const [exchangeAmount, setExchangeAmount] = useState(0);
   const [exchangeDetails, setExchangeDetail] = useState(null);
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [orders, setOrders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenList, setIsModalOpenList] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleAddMembershipModal = () => {
+    setIsOpen(!isOpen);
+  };
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -67,13 +80,34 @@ const PosOrders = () => {
       console.error("Error fetching user data:", error);
     }
   };
+
+  // Function to fetch card by phone number
+  const getMembershipCardByPhone = async (phone) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/memberships/phone/${phone}`);
+
+      if (!response.ok) {
+        throw new Error("Card not found for the provided phone number.");
+      }
+
+      const result = await response.json();
+      setCard(result);  // Set the fetched card data
+    } catch (error) {
+      setError(error.message);  // Set error if any
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   const handleUserInfoChange = async (e) => {
     const { name, value } = e.target;
 
     if (name === 'phone' && value.length === 11) {
       console.log(name, value.length);
-
       await fetchUserData(value);
+      await getMembershipCardByPhone(value)
     }
     setUserInfo((prevUserInfo) => ({
       ...prevUserInfo,
@@ -105,7 +139,7 @@ const PosOrders = () => {
         ...selectedProduct,
         ...sizeData,
         size,
-        productId:selectedProduct._id,
+        productId: selectedProduct._id,
         quantity: 1,
         discountPercent,
         discountAmount,
@@ -164,11 +198,19 @@ const PosOrders = () => {
   const totalDiscount = discount.type === 'percentage' ? calculateTotalAmount() * discount.value / 100 : discount.value
 
   useEffect(() => {
-    setTotalTK(calculateTotalAmount() - totalDiscount -exchangeAmount )
-  }, [calculateTotalAmount(), totalDiscount, discount , exchangeAmount])
+    setTotalTK(calculateTotalAmount() - totalDiscount - exchangeAmount)
+  }, [calculateTotalAmount(), totalDiscount, discount, exchangeAmount])
+
+
   const handleInputChange = (e) => {
     setBarcode(e.target.value);
   };
+  const handleMembershipBarcodeInputChange = (e) => {
+    setMembershipCode(e.target.value);
+  };
+
+
+
   const handleSearch = async () => {
     try {
       const response = await fetch(`${baseUrl}/api/products/product/pos/${barcode}`);
@@ -186,6 +228,69 @@ const PosOrders = () => {
       console.error(err);
     }
   };
+
+  // Function to fetch card by phone number
+  const getMembershipCardByCardNumber = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/memberships/card-number/${membershipCode}`);
+      if (!response.ok) {
+        throw new Error("Card not found for the provided phone number.");
+      }
+      const result = await response.json();
+      setCard(result);  // Set the fetched card data
+    } catch (error) {
+      setError(error.message);  // Set error if any
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   // Function to handle form submission
+   const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    // Create an object with the form data
+    const formData = { cardNumber:membershipCode, name:userInfo.name, phone:userInfo.phone, address:userInfo.address };
+
+    console.log(formData);
+    
+
+    try {
+      // Call the applyMembershipCard function (Make sure this matches your API call setup)
+      const response = await fetch(`${baseUrl}/api/memberships/apply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage("Membership card applied/updated successfully.");
+        toggleAddMembershipModal();  // Close modal after success
+        getMembershipCardByCardNumber();
+      } else {
+        setMessage(data.message || "An error occurred.");
+      }
+    } catch (error) {
+      setMessage("Failed to apply card. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getMembershipCardByCardNumber();
+    if (membershipCode.length < 8 || membershipCode.length > 8) {
+      setCard(null)
+    }
+  }, [membershipCode])
+
+
   useEffect(() => {
     handleSearch()
   }, [barcode])
@@ -210,7 +315,7 @@ const PosOrders = () => {
                       <figure>
                         <img
                           className="h-full w-[130px]"
-                          src={product.images[0]?`${baseUrl}/${product.images[0]}`:altImg}
+                          src={product.images[0] ? `${baseUrl}/${product.images[0]}` : altImg}
                           alt={product.productName}
                         />
                       </figure>
@@ -263,16 +368,41 @@ const PosOrders = () => {
                     </span>
                   }
                 </p>
-                <label className="input  rounded-sm input-bordered flex items-center gap-2 my-1 h-10">
-                  <CiBarcode />
-                  <input
-                    type="text"
-                    className="grow"
-                    placeholder="barcode"
-                    value={barcode}
-                    onChange={handleInputChange}
-                  />
-                </label>
+                <div className="flex justify-between items-center">
+                  <label className="input  rounded-sm input-bordered flex items-center gap-2 my-1 h-10">
+                    <CiBarcode />
+                    <input
+                      type="text"
+                      className="grow"
+                      placeholder="barcode"
+                      value={barcode}
+                      onChange={handleInputChange}
+                    />
+                  </label>
+                  <label className="input  rounded-sm input-bordered flex items-center gap-2 my-1 h-10">
+                    <CiBarcode />
+                    <input
+                      type="text"
+                      className="grow"
+                      placeholder="Membership card"
+                      value={membershipCode}
+                      onChange={handleMembershipBarcodeInputChange}
+                    />
+                  </label>
+                  <button onClick={toggleAddMembershipModal} className="btn btn-sm btn-error text-white ">Handle Membership</button>
+                </div>
+
+                {card && card.issuedTo && <div className="my-2">
+                  <p className='text-center bg-blue-500 text-white'>Membership info</p>
+                  <div className="flex justify-between flex-wrap mx-2 gap-2">
+                    <p>Phone: {card?.issuedTo?.phone}</p>
+                    <p>Name: {card?.issuedTo?.name}</p>
+                    <p>Code: {card?.cardNumber}</p>
+                    <p>Tier: {card?.tier}</p>
+                    <p>discount: {card?.discountPercentage}%</p>
+                  </div>
+                </div>}
+
                 <div className="min-w-full bg-white px-4">
                   {/* Header */}
                   <div className="bg-green-500 text-white flex">
@@ -448,9 +578,9 @@ const PosOrders = () => {
                 </p>
               </div>
 
-              <div className={` cursor-pointer w-2/12 ${orderItems.length !== 0 || totalTk <=0 ? 'bg-[#00a65a]' : "bg-[#00a65b3f] "}`} >
+              <div className={` cursor-pointer w-2/12 ${orderItems.length !== 0 || totalTk <= 0 ? 'bg-[#00a65a]' : "bg-[#00a65b3f] "}`} >
                 <button
-                  disabled={ orderItems.length === 0 || totalTk < 0}
+                  disabled={orderItems.length === 0 || totalTk < 0}
                   onClick={handlePaymentClick}
                 >
                   <p className="text-4xl font-bold py-4 text-white">
@@ -465,7 +595,7 @@ const PosOrders = () => {
           <SizeModal product={selectedProduct} onSizeSelect={handleSizeSelect} onClose={() => setModalVisible(false)} />
         )}
         {paymentModalVisible && (
-          <PaymentModal exchangeDetails={exchangeDetails} exchangeAmount={exchangeAmount}  totalDiscount={totalDiscount} setPaymentModalVisible={setPaymentModalVisible} userInfo={userInfo} orderItems={orderItems} discount={discount} calculateTotalAmount={calculateTotalAmount} finalAmount={totalTk} />
+          <PaymentModal exchangeDetails={exchangeDetails} exchangeAmount={exchangeAmount} totalDiscount={totalDiscount} setPaymentModalVisible={setPaymentModalVisible} userInfo={userInfo} orderItems={orderItems} discount={discount} calculateTotalAmount={calculateTotalAmount} finalAmount={totalTk} />
 
         )}
 
@@ -498,7 +628,51 @@ const PosOrders = () => {
           </div>
         </dialog>
 
+        {
+          isOpen && (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h2 className="text-2xl font-semibold mb-4">Apply Membership Card</h2>
 
+                {message && <p className="text-center mb-4 text-sm text-red-500">{message}</p>}
+
+                <form onSubmit={handleSubmit}>
+                  {/* Card Number */}
+                  <div className="mb-4">
+                    <label className="input  rounded-sm input-bordered flex items-center gap-2 my-1 h-10">
+                      <CiBarcode />
+                      <input
+                        type="text"
+                        className="grow"
+                        placeholder="Membership card"
+                        value={membershipCode}
+                        onChange={handleMembershipBarcodeInputChange}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="flex justify-end mt-4">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                      disabled={loading}
+                    >
+                      {loading ? "Processing..." : "Apply Card"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={toggleAddMembershipModal}
+                      className="ml-2 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )
+        }
       </div>
     </React.Fragment>
   );
