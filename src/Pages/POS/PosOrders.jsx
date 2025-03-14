@@ -21,9 +21,9 @@ const PosOrders = () => {
   const [totalTk, setTotalTK] = useState(0)
   const [barcode, setBarcode] = useState('');
   const [membershipCode, setMembershipCode] = useState('');
-  const [card, setCard] = useState(null);  // To store the fetched card data
-  const [loading, setLoading] = useState(false);  // To manage loading state
-  const [error, setError] = useState(null);
+  const [card, setCard] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [setError] = useState(null);
   const [userInfo, setUserInfo] = useState({
     phone: '',
     name: '',
@@ -40,6 +40,7 @@ const PosOrders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenList, setIsModalOpenList] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [membershipDiscount, setMembershipDiscount] = useState(0);
 
   const toggleAddMembershipModal = () => {
     setIsOpen(!isOpen);
@@ -59,6 +60,11 @@ const PosOrders = () => {
   const handleCloseModalList = () => {
     setIsModalOpenList(false);
   };
+
+  const isApplyMembership = () => {
+    setMembershipDiscount((calculateTotalAmount() * card?.discountPercentage) / 100);
+  }
+
   const fetchUserData = async (phone) => {
     try {
       const response = await fetch(`${baseUrl}/api/orders/orders/${phone}`);
@@ -198,8 +204,8 @@ const PosOrders = () => {
   const totalDiscount = discount.type === 'percentage' ? calculateTotalAmount() * discount.value / 100 : discount.value
 
   useEffect(() => {
-    setTotalTK(calculateTotalAmount() - totalDiscount - exchangeAmount)
-  }, [calculateTotalAmount(), totalDiscount, discount, exchangeAmount])
+    setTotalTK(calculateTotalAmount() - totalDiscount - exchangeAmount - membershipDiscount)
+  }, [calculateTotalAmount(), totalDiscount, discount, exchangeAmount, membershipDiscount])
 
 
   const handleInputChange = (e) => {
@@ -208,6 +214,10 @@ const PosOrders = () => {
   const handleMembershipBarcodeInputChange = (e) => {
     setMembershipCode(e.target.value);
   };
+
+  const clearMembershipDiscount = () => {
+    setMembershipDiscount(0)
+  }
 
 
 
@@ -245,17 +255,17 @@ const PosOrders = () => {
     }
   };
 
-   // Function to handle form submission
-   const handleSubmit = async (e) => {
+  // Function to handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
     // Create an object with the form data
-    const formData = { cardNumber:membershipCode, name:userInfo.name, phone:userInfo.phone, address:userInfo.address };
+    const formData = { cardNumber: membershipCode, name: userInfo.name, phone: userInfo.phone, address: userInfo.address };
 
     console.log(formData);
-    
+
 
     try {
       // Call the applyMembershipCard function (Make sure this matches your API call setup)
@@ -401,6 +411,10 @@ const PosOrders = () => {
                     <p>Tier: {card?.tier}</p>
                     <p>discount: {card?.discountPercentage}%</p>
                   </div>
+                  <div className="flex gap-1 justify-center">
+                    <button onClick={isApplyMembership} className="btn btn-sm btn-success block my-2 text-white">Apply</button>
+                    <button onClick={clearMembershipDiscount} className="btn btn-sm btn-error block my-2 text-white">Clear</button>
+                  </div>
                 </div>}
 
                 <div className="min-w-full bg-white px-4">
@@ -482,6 +496,10 @@ const PosOrders = () => {
                   <div className="flex justify-between">
                     <span>Total</span>
                     <span>{calculateTotalAmount()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Membership Discount</span>
+                    <span>{membershipDiscount}</span>
                   </div>
                 </div>
                 <div className="fixed w-7/12 bg-black  text-white grid grid-cols-2 gap-5 p-7 bottom-[70px]">
@@ -595,7 +613,7 @@ const PosOrders = () => {
           <SizeModal product={selectedProduct} onSizeSelect={handleSizeSelect} onClose={() => setModalVisible(false)} />
         )}
         {paymentModalVisible && (
-          <PaymentModal exchangeDetails={exchangeDetails} exchangeAmount={exchangeAmount} totalDiscount={totalDiscount} setPaymentModalVisible={setPaymentModalVisible} userInfo={userInfo} orderItems={orderItems} discount={discount} calculateTotalAmount={calculateTotalAmount} finalAmount={totalTk} />
+          <PaymentModal exchangeDetails={exchangeDetails} exchangeAmount={exchangeAmount} totalDiscount={totalDiscount} setPaymentModalVisible={setPaymentModalVisible} userInfo={userInfo} orderItems={orderItems} discount={discount} calculateTotalAmount={calculateTotalAmount} finalAmount={totalTk} cardNumber = {card?.cardNumber} membershipDiscount = {membershipDiscount}/>
 
         )}
 

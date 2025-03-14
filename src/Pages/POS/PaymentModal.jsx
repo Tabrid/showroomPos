@@ -6,7 +6,7 @@ import { CiBarcode } from "react-icons/ci";
 import axios from 'axios';
 
 
-const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItems, discount, exchangeDetails, exchangeAmount }) => {
+const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItems, discount, exchangeDetails, exchangeAmount,cardNumber, membershipDiscount }) => {
   const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState([
     { id: 1, accountType: 'Cash', paymentOption: '', accountNumber: '', amount: '' },
@@ -171,6 +171,11 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
         giftCard: {
           giftAmount,
           code: appliedGiftCard
+        },
+        membership:{
+          cardNumber,
+          membershipDiscount,
+          phone:userInfo.phone
         }
       };
       try {
