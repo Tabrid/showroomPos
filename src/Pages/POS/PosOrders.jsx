@@ -69,7 +69,7 @@ const PosOrders = () => {
     try {
       const response = await fetch(`${baseUrl}/api/orders/orders/${phone}`);
       const userData = await response.json();
-
+      
       if (userData) {
         console.log(userData);
         setUserInfo({
@@ -79,13 +79,17 @@ const PosOrders = () => {
         });
         setOrders(userData.orderList || []);
       } else {
-        setUserInfo({ phone: '', name: '', address: '' });
+        setUserInfo({ phone, name: '', address: '' });
         setOrders([]);
       }
     } catch (error) {
+      console.log(phone);
+      
+      setUserInfo({ phone, name: '', address: '' });
       console.error("Error fetching user data:", error);
     }
   };
+
 
   // Function to fetch card by phone number
   const getMembershipCardByPhone = async (phone) => {
@@ -111,7 +115,6 @@ const PosOrders = () => {
     const { name, value } = e.target;
 
     if (name === 'phone' && value.length === 11) {
-      console.log(name, value.length);
       await fetchUserData(value);
       await getMembershipCardByPhone(value)
     }

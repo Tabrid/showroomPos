@@ -5,8 +5,8 @@ import baseUrl from '../../Components/services/baseUrl';
 const Login = () => {
   // State to handle form data
   const [formData, setFormData] = useState({
-    email: 'showroom-manager@gmail.com',
-    password: '123456',
+    email: '',
+    password: '',
   });
 
   // State to handle errors
@@ -47,7 +47,7 @@ const Login = () => {
               <span className="label-text">Email</span>
             </label>
             <input id="email"
-            defaultValue={'showroom-manager@gmail.com'}
+            // defaultValue={'showroom-manager2@gmail.com'}
               name="email"
               placeholder="Enter email"
               type="email"

@@ -97,7 +97,7 @@ const InvestorWithdrawModal = ({ show, handleClose, fetchMyRequest }) => {
       amount: totalAmount,
       accountType: 'Showroom Account',
       senderId,
-      receiverId:'6702bc527a0dfff18feaba4f', 
+      receiverId:'67d7e99fc1252e5982dc61e7', 
       type: "showroom-Withdraw",
       payments
     };
