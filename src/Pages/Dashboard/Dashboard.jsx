@@ -6,18 +6,21 @@ import baseUrl from "../../Components/services/baseUrl";
 function Dashboard() {
     const { logout } = useLogout();
     const [startDate, setStartDate] = useState('');
-    const [singleDate, setSingleDate] = useState('');
+    const [singleDate, setSingleDate] = useState(new Date().toISOString().split('T')[0]); 
     const [endDate, setEndDate] = useState('');
     const [data, setData] = useState({});
     const [orders, setOrders] = useState([]);
     const [mobileNumber, setMobileNumber] = useState('');
     const [invoiceNo, setInvoiceNo] = useState('');
     const [date, setDate] = useState('');
-    const [manager, setManager] = useState('Show Room'); // Default value
+    const [manager, setManager] = useState('Show Room'); 
+    
 
     // Fetch user ID and initialize dashboard data
     useEffect(() => {
         fetchOrder()
+        console.log(baseUrl);
+        
         let userId;
         try {
             const userIdString = localStorage.getItem('userId');
@@ -44,7 +47,7 @@ function Dashboard() {
             console.error('Error fetching data:', error);
         }
     };
-    
+
     const fetchOrder = async () => {
         try {
             const response = await fetch(`${baseUrl}/api/orders/oders/showrooms?phone=${mobileNumber}&invoice=${invoiceNo}&date=${date}&manager=${manager}`);
@@ -244,7 +247,7 @@ function Dashboard() {
                                     </div>
                                     <div className="p-4 border">
                                         <div className="relative inline-block text-left">
-                                            <button onClick={() => handleView(data._id)} className="bg-orange-500 text-white px-4 py-2 rounded">View</button>
+                                            <button onClick={() => handleView(data?.invoice)} className="bg-orange-500 text-white px-4 py-2 rounded">View</button>
                                         </div>
                                     </div>
                                 </div>

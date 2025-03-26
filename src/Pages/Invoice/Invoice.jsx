@@ -12,7 +12,7 @@ const Invoice = () => {
     // Function to fetch order data
     const fetchOrder = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/orders/order/${id}`);
+        const response = await fetch(`${baseUrl}/api/orders/order/invoice/${id}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -52,6 +52,9 @@ const Invoice = () => {
     minute: '2-digit',
     second: '2-digit',
   });
+
+  console.log(order);
+  
 
   return (
     <div className="w-[90mm] h-screen mx-auto p-2  font text-black">
