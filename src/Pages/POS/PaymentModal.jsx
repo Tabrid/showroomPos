@@ -189,7 +189,7 @@ const PaymentModal = ({ setPaymentModalVisible, finalAmount, userInfo, orderItem
         if (response.ok) {
           const responseData = await response.json();
           alert('Order placed successfully!');
-          window.location.href = `/invoice/${responseData.order.invoice}`;
+          window.location.href = `/invoice/${responseData.order._id}`;
           console.log(responseData);
         } else {
           console.error('There was an error placing the order:', response);

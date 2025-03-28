@@ -8,11 +8,13 @@ const Invoice = () => {
   const [order, setOrder] = useState(null); // State to store order data
   const [loading, setLoading] = useState(true); // State to manage loading state
   const [error, setError] = useState(null);
+  console.log(order);
+  
   useEffect(() => {
     // Function to fetch order data
     const fetchOrder = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/orders/order/invoice/${id}`);
+        const response = await fetch(`${baseUrl}/api/orders/order/${id}`);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
